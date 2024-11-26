@@ -1,0 +1,87 @@
+/* Hiệu ứng cuộn mềm cho phần lịch */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #6b7280 #2d3748; /* Màu thanh cuộn và nền */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #2d3748; /* Nền của thanh cuộn */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #6b7280; /* Màu của thanh cuộn */
+    border-radius: 10px;
+    border: 2px solid #2d3748; /* Đường viền xung quanh thanh cuộn */
+}
+
+/* Hiệu ứng nhẹ nhàng khi hover */
+.hover\\:scale-102:hover {
+    transform: scale(1.02);
+}
+
+.transition-transform {
+    transition: transform 0.2s ease-in-out;
+}
+/* Đảm bảo Sidebar luôn có chiều cao đầy đủ */
+.sidebar {
+    height: 100vh; /* Chiếm toàn bộ chiều cao màn hình */
+    position: fixed; /* Sidebar cố định khi cuộn trang */
+    top: 0;
+    left: 0;
+    width: 250px; /* Đặt chiều rộng sidebar */
+    z-index: 10; /* Đảm bảo sidebar luôn hiển thị trên các phần tử khác */
+}
+
+.main-content {
+    margin-left: 250px; /* Đẩy nội dung chính sang phải để tránh bị chồng lên sidebar */
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Sidebar Item */
+.sidebar a {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover hiệu ứng cho các mục khác */
+.sidebar a:hover {
+    background-color: #60687e; /* Xanh dương khi hover */
+    transform: scale(1.05); /* Hiệu ứng phóng to nhẹ khi hover */
+}
+
+/* Sidebar Tùy chọn */
+.sidebar .text-white {
+    color: #ffffff;
+}
+
+/* Đăng Xuất */
+.sidebar a:hover.text-red-500 {
+    background-color: #ef4444; /* Màu đỏ cho Đăng Xuất */
+    transform: scale(1.05); /* Giữ hiệu ứng phóng to */
+}
+
+.sidebar .text-red-500:hover {
+    color: #ffffff; /* Đổi màu chữ Đăng Xuất khi hover */
+}
+
+#newNotificationForm {
+    display: none;
+}
+
+
+
+
+
+
+
+

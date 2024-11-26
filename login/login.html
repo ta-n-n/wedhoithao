@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Page Background */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container styling */
+        .container {
+            display: flex;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Left side image styling */
+        .left-side {
+            background-color: #e9f8e9;
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .left-side img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        /* Right side form styling */
+        .right-side {
+            padding: 40px;
+            width: 50%;
+            position: relative;
+        }
+
+        /* Logo */
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            max-width: 120px;
+        }
+
+        /* Form Title */
+        .form-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #4caf50;
+            outline: none;
+        }
+
+        /* Forgot Password */
+        .forgot-password {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .forgot-password a {
+            color: #4caf50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        /* Buttons */
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .footer a {
+            color: #4caf50;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Side -->
+        <div class="left-side">
+            <img src="../Images/z6065531401840_7c8c13498e1670c53bbe8aa31ed89257.jpg" alt="Illustration"> 
+        </div>
+
+        <!-- Right Side -->
+        <div class="right-side">
+            <div class="logo">
+                <img src="../Images/80528_01_14_2020_10_08_46.png" alt="Logo">
+            </div>
+            <div id="login-form">
+                <div class="form-title">Login</div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#">Forgot Your Password?</a>
+                    </div>
+                    <button type="submit" class="login-btn">Login</button>
+                </form>
+                <div class="footer">
+                    Don't have an account? <a href="./register.html">Register now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Lấy thông tin từ form
+            const tenTaiKhoan = document.getElementById('username').value;
+            const matKhau = document.getElementById('password').value;
+
+            try {
+                // Gửi yêu cầu API
+                const response = await fetch('https://localhost:7111/api/Auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ tenTaiKhoan, matKhau }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Lưu JWT token vào localStorage
+                    localStorage.setItem('jwtToken', data.token);
+
+                    // Giải mã JWT token để lấy vai trò (vaiTro)
+                    const decodedToken = jwt_decode(data.token);
+                    const vaiTro = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+                    // Kiểm tra vai trò của người dùng và chuyển hướng phù hợp
+                    if (vaiTro === 'Admin') {
+                        alert('Login successful! Redirecting to dashboard...');
+                        window.location.href = '../dashboard/dashboard.html'; // Chuyển hướng đến trang dashboard
+                    } else {
+                        alert('Login successful! Redirecting to index...');
+                        window.location.href = '../index.html'; // Chuyển hướng đến trang index
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Login failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert('Unable to connect to the server.');
+            }
+        });
+    </script>
+</body>
+</html>

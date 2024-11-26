@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Sự Kiện / Hội Thảo</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="sidebar bg-gray-800 p-6 text-white w-64">
+            <h2 class="text-2xl font-bold text-teal-600 mb-8 text-center">MyEV</h2>
+            <ul class="space-y-5">
+                <li><a href="Dashboard.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-home text-teal-500"></i><span>Dashboard</span></a></li>
+                <li><a href="Conference.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-calendar-alt text-teal-500"></i><span>Sự Kiện / Hội Thảo</span></a></li>
+                <li><a href="Organization.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-building text-teal-500"></i><span>Tổ Chức</span></a></li>
+                <li><a href="Registration.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-users text-teal-500"></i><span>Tham Dự</span></a></li>
+                <li><a href="User.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-user text-teal-500"></i><span>Người Dùng</span></a></li>
+                <li><a href="Contracts.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-file-contract text-teal-500"></i><span>Hợp Đồng</span></a></li>
+                <li><a href="Notifications.html" class="flex items-center space-x-3 p-3 rounded-lg"><i class="fas fa-bell text-teal-500"></i><span>Thông Báo</span></a></li>
+                <li>
+                    <button onclick="handleLogout()" class="flex items-center space-x-3 text-red-500 hover:bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-sign-out-alt text-red-500"></i><span>Đăng Xuất</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content flex-1 p-8 bg-white">
+            <header class="flex items-center justify-between p-6 bg-white shadow-md rounded-lg mb-8">
+                <!-- Tìm kiếm -->
+                <div class="relative w-1/3">
+                    <input type="text" placeholder="Tìm kiếm..." id="searchConference" class="w-full p-3 pl-12 rounded-lg bg-gray-200 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-300">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="relative">
+                        <i class="fas fa-bell text-gray-600 hover:text-teal-500 transition-colors duration-200"></i>
+                        <span class="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center">3</span>
+                    </div>
+                    <i class="fas fa-envelope text-gray-600 hover:text-teal-500 transition-colors duration-200"></i>
+                    <div class="bg-gray-200 p-3 rounded-full text-gray-700 font-semibold">Admin</div>
+                </div>
+            </header>
+
+            <section id="eventsContent" class="section-content">
+                <h2 class="text-2xl font-bold mb-6">Sự Kiện / Hội Thảo</h2>
+
+                <!-- Search and Filter Controls -->
+                <div class="mb-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <!-- Search Bar -->
+                    <div class="relative w-full md:w-1/3">
+                        <input type="text" id="eventSearch" placeholder="Tìm kiếm sự kiện..."
+                               class="p-2 pl-10 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                    <!-- Filter by Date -->
+                    <div class="flex space-x-4">
+                        <input type="date" id="eventFilterDate" class="p-2 border border-gray-300 rounded-md">
+                        
+                        <!-- Filter by Organizer -->
+                        <select id="eventFilterOrganizer" class="p-2 border border-gray-300 rounded-md">
+                            <option value="">Lọc theo Tổ Chức</option>
+                            <!-- Add more organizers as options -->
+                        </select>
+                        <button id="addEventButton" class="bg-teal-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-teal-700 transition duration-200">
+                            Thêm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table for listing conferences -->
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên Sự Kiện</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Địa Điểm</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời Gian Bắt Đầu</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời Lượng</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phí</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổ Chức</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventList">
+                        <!-- Rows will be dynamically added -->
+                    </tbody>
+                </table>
+            </section>
+
+                <!-- New/Edit Event Form -->
+                <section id="eventForm" class="bg-white p-8 rounded-lg shadow-lg border border-gray-200 max-w-3xl mx-auto mt-10">
+                    <h3 class="text-2xl font-semibold text-teal-700 mb-6">Tạo / Chỉnh Sửa Sự Kiện</h3>
+                    <form id="newEventForm" enctype="multipart/form-data">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <input type="hidden" id="conferenceId" name="conferenceId">
+                
+                            <!-- Event Name -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">Tên Sự Kiện</label>
+                                <input type="text" id="eventName" name="eventName" placeholder="Nhập tên sự kiện"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                
+                            <!-- Organizer -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">Tổ Chức</label>
+                                <select id="eventOrganizer" name="eventOrganizer"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                                    <option value="" disabled selected>Chọn tổ chức</option>
+                                </select>
+                            </div>
+                
+                            <!-- Start Date and Time -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">Thời Gian Bắt Đầu</label>
+                                <input type="datetime-local" id="eventStartTime" name="eventStartTime"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                
+                            <!-- End Date and Time -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">Thời Gian Kết Thúc</label>
+                                <input type="datetime-local" id="eventEndTime" name="eventEndTime"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                
+                            <!-- Fee -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">Phí Tham Dự ($)</label>
+                                <input type="number" id="eventFee" name="eventFee" placeholder="Nhập phí tham dự" min="0" step="0.01"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">Tải Ảnh</label>
+                                <input type="file" id="eventImage" name="eventImage"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                            
+                
+                            <!-- Location -->
+                            <div class="col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700">Địa Điểm</label>
+                                <textarea id="eventLocation" name="eventLocation" placeholder="Nhập địa chỉ hoặc chọn vị trí trên bản đồ"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 h-24"></textarea>
+                            </div>
+                
+                            <!-- Map -->
+                            <div class="col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Chọn vị trí trên bản đồ</label>
+                                <div id="eventMap" class="h-64 rounded-md border border-gray-300 shadow-sm"></div>
+                            </div>
+                
+                            <!-- Hidden fields for coordinates -->
+                            <input type="hidden" id="eventLatitude">
+                            <input type="hidden" id="eventLongitude">
+                        </div>
+                
+                        <!-- Buttons -->
+                        <div class="flex justify-center space-x-4">
+                            <button type="submit" id="saveEventButton"
+                                class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white font-semibold rounded-md shadow-md hover:bg-teal-700 transition duration-200">
+                                Lưu Sự Kiện
+                            </button>
+                            <button type="button" id="closeEventFormButton"
+                                class="w-full md:w-auto px-6 py-3 bg-gray-500 text-white font-semibold rounded-md shadow-md hover:bg-gray-600 transition duration-200">
+                                Đóng
+                            </button>
+                        </div>
+                    </form>
+                </section>
+                
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+const apiUrl = 'https://localhost:7111/api/Conference';
+const orgApiUrl = 'https://localhost:7111/api/Organization';
+const jwtToken = localStorage.getItem('jwtToken');
+
+// Hàm lấy danh sách hội thảo
+async function fetchConferences() {
+    try {
+        const response = await fetch(apiUrl, {
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch conferences');
+        const conferences = await response.json();
+        renderConferenceTable(conferences);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// Render danh sách hội thảo vào bảng
+function renderConferenceTable(conferences) {
+    const eventList = document.getElementById('eventList');
+    eventList.innerHTML = '';
+    conferences.forEach(conference => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${conference.conferenceName}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${conference.location}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(conference.startDate).toLocaleString()}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${conference.duration} giờ</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${conference.fee}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${conference.organizationName}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="editConference(${conference.conferenceId})" class="text-indigo-600 hover:text-indigo-900">Sửa</button>
+                <button onclick="deleteConference(${conference.conferenceId})" class="text-red-600 hover:text-red-900 ml-4">Xóa</button>
+            </td>
+        `;
+        eventList.appendChild(row);
+    });
+}
+
+// Load danh sách tổ chức
+async function loadOrganizations() {
+    try {
+        const response = await fetch(orgApiUrl, {
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch organizations');
+        const organizations = await response.json();
+        const organizerSelect = document.getElementById('eventOrganizer');
+        organizerSelect.innerHTML = '<option value="" disabled selected>Chọn tổ chức</option>';
+        organizations.forEach(org => {
+            const option = document.createElement('option');
+            option.value = org.organizationId;
+            option.textContent = org.organizationName;
+            organizerSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// Toggle form hiển thị hoặc ẩn
+function toggleEventForm(show = false) {
+    const eventForm = document.getElementById('eventForm');
+    const eventsContent = document.getElementById('eventsContent');
+    
+    if (show) {
+        eventForm.style.display = 'block';
+        eventsContent.style.display = 'none';
+    } else {
+        eventForm.style.display = 'none';
+        eventsContent.style.display = 'block';
+    }
+}
+
+// Đóng form sự kiện
+document.addEventListener("DOMContentLoaded", function () {
+    const closeEventFormButton = document.getElementById("closeEventFormButton");
+
+    closeEventFormButton.addEventListener("click", function () {
+        toggleEventForm(false);
+    });
+});
+
+// Khởi tạo form sự kiện và các sự kiện nút
+document.addEventListener("DOMContentLoaded", function () {
+    const addEventButton = document.getElementById("addEventButton");
+
+    toggleEventForm(false);
+
+    addEventButton.addEventListener("click", function () {
+        document.getElementById('newEventForm').reset();
+        document.getElementById('conferenceId').value = '';
+        toggleEventForm(true);
+    });
+
+    fetchConferences();
+    loadOrganizations();
+    initEventMap();
+});
+
+// Xử lý thêm hoặc sửa sự kiện
+document.getElementById('newEventForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    const conferenceData = {
+        conferenceName: formData.get('eventName'),
+        startDate: formData.get('eventStartTime'),
+        endDate: formData.get('eventEndTime'),
+        fee: parseFloat(formData.get('eventFee')),
+        location: formData.get('eventLocation'),
+        organizationId: parseInt(formData.get('eventOrganizer')),
+        latitude: parseFloat(document.getElementById('eventLatitude').value) || null,
+        longitude: parseFloat(document.getElementById('eventLongitude').value) || null
+    };
+
+    try {
+        let response;
+        const conferenceId = formData.get('conferenceId');
+        if (conferenceId) {
+            response = await fetch(`${apiUrl}/${conferenceId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` },
+                body: JSON.stringify(conferenceData)
+            });
+        } else {
+            response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` },
+                body: JSON.stringify(conferenceData)
+            });
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to save conference');
+        }
+
+        // Nếu có ảnh, tải ảnh lên
+        const savedConference = await response.json();
+        const imageFile = formData.get('eventImage');
+        if (imageFile && imageFile.size > 0) {
+            const imageData = new FormData();
+            imageData.append('file', imageFile);
+
+            const imageResponse = await fetch(`${apiUrl}/${savedConference}/upload-image`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${jwtToken}` }, // Không cần Content-Type vì FormData tự thêm
+                body: imageData
+            });
+
+            if (!imageResponse.ok) {
+                throw new Error('Failed to upload image');
+            }
+        }
+
+        fetchConferences();
+        toggleEventForm(false);
+    } catch (error) {
+        console.error('Error saving conference:', error);
+    }
+});
+
+// Sửa hội thảo
+async function editConference(conferenceId) {
+    try {
+        const response = await fetch(`${apiUrl}/${conferenceId}`, {
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch conference details');
+        const conference = await response.json();
+
+        document.getElementById('eventName').value = conference.conferenceName;
+        document.getElementById('eventStartTime').value = conference.startDate.slice(0, 16);
+        document.getElementById('eventEndTime').value = conference.endDate.slice(0, 16);
+        document.getElementById('eventFee').value = conference.fee;
+        document.getElementById('eventLocation').value = conference.location;
+        document.getElementById('eventOrganizer').value = conference.organizationId;
+        document.getElementById('conferenceId').value = conference.conferenceId;
+
+        toggleEventForm(true);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// Xóa hội thảo
+async function deleteConference(conferenceId) {
+    if (confirm('Bạn có chắc chắn muốn xóa sự kiện này?')) {
+        try {
+            const response = await fetch(`${apiUrl}/${conferenceId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+            if (!response.ok) throw new Error('Failed to delete conference');
+            fetchConferences();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
+
+// Biến toàn cục để lưu bản đồ
+let eventMap = null;
+let eventMarker = null;
+
+// Khởi tạo bản đồ sự kiện
+function initEventMap() {
+    setTimeout(function () {
+        const mapContainer = document.getElementById('eventMap');
+
+        // Nếu đã tồn tại bản đồ, không khởi tạo lại
+        if (eventMap) {
+            // Chỉ invalidate kích thước nếu bản đồ đã được khởi tạo
+            if (eventMap instanceof L.Map) {
+                eventMap.invalidateSize(); // Làm mới kích thước của bản đồ
+            }
+            return;
+        }
+
+        // Khởi tạo bản đồ lần đầu
+        eventMap = L.map(mapContainer).setView([21.0285, 105.8542], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(eventMap);
+
+        // Xử lý sự kiện khi người dùng click trên bản đồ
+        eventMap.on('click', function (e) {
+            const { lat, lng } = e.latlng;
+
+            // Nếu đã có marker, cập nhật vị trí marker thay vì tạo mới
+            if (eventMarker) {
+                eventMarker.setLatLng([lat, lng]);
+            } else {
+                eventMarker = L.marker([lat, lng]).addTo(eventMap)
+                    .bindPopup(`Vị trí đã chọn: ${lat.toFixed(5)}, ${lng.toFixed(5)}`).openPopup();
+            }
+
+            // Cập nhật thông tin tọa độ vào input ẩn
+            document.getElementById("eventLatitude").value = lat;
+            document.getElementById("eventLongitude").value = lng;
+
+            // Cập nhật địa chỉ trong ô nhập địa điểm
+            updateEventLocationInput(lat, lng);
+        });
+    }, 3000);
+}
+
+// Cập nhật thông tin vị trí từ tọa độ
+function updateEventLocationInput(lat, lng) {
+    const locationInput = document.getElementById("eventLocation");
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+            const address = data.display_name || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+            locationInput.value = address;
+        })
+        .catch(error => {
+            console.error("Không thể lấy địa chỉ từ tọa độ:", error);
+            locationInput.value = `Lat: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        });
+}
+
+// Khởi tạo mọi thứ khi tải trang
+document.addEventListener('DOMContentLoaded', async function () {
+    await checkJwtValidity();
+    fetchConferences();
+    loadOrganizations();
+    initEventMap();
+
+    document.getElementById('addEventButton').addEventListener('click', function () {
+        document.getElementById('newEventForm').reset();
+        document.getElementById('conferenceId').value = '';
+        toggleEventForm(true);
+    });
+
+    const closeEventFormButton = document.getElementById('closeEventFormButton');
+    closeEventFormButton.addEventListener('click', function () {
+        toggleEventForm(false);
+    });
+});
+
+// Hàm kiểm tra tính hợp lệ của JWT
+async function checkJwtValidity() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Vui lòng đăng nhập!');
+        window.location.href = '../login/login.html';
+        return;
+    }
+
+    try {
+        const response = await fetch('https://localhost:7111/api/Auth/validate-token', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.isValid) {
+            alert(data.message || 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại!');
+            localStorage.removeItem('jwtToken');
+            window.location.href = '../login/login.html';
+        }
+    } catch (error) {
+        console.error('Lỗi khi kiểm tra JWT:', error);
+        alert('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại!');
+        localStorage.removeItem('jwtToken');
+        window.location.href = '../login/login.html';
+    }
+}
+function handleLogout() {
+    localStorage.removeItem('jwtToken'); // Xóa token
+    alert('Đăng xuất thành công!');
+    window.location.href = '../login/login.html'; // Chuyển hướng về trang đăng nhập
+}
+
+    </script>
+</body>
+</html>
